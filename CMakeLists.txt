@@ -3,3 +3,4 @@ project(vgg_layout VERSION 0.1.0)
 
 add_subdirectory(vgg_contrib)
 add_subdirectory(flexbox)
+add_subdirectory(grid_layout)
