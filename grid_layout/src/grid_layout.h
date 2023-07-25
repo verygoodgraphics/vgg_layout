@@ -5,18 +5,17 @@
 #include <vector>
 #include <list>
 #include <map>
-#include <optional>
-#include <tuple>
 #include <string>
-#include <cassert>
+#include <array>
+#include <optional>
 #include "./grid_item.h"
 
 using std::shared_ptr;
 using std::vector;
 using std::map;
-using std::optional;
-using std::tuple;
 using std::string;
+using std::array;
+using std::optional;
 
 class grid_layout
 {
@@ -32,7 +31,7 @@ public:
     }
 
 public:
-    grid_layout(int column_count);
+    grid_layout(uint32_t column_count, optional<uint32_t> min_row = optional<uint32_t>());
 
 public:
     /**
@@ -61,10 +60,61 @@ public:
     uint32_t get_row_count() const { return this->row_count_; }
     uint32_t get_column_count() const { return this->column_count_; }
 
+    // grid_layout_yaml.grid_auto_flow
     grid_auto_flow get_grid_auto_flow() const { return this->grid_auto_flow_; }
     void set_grid_auto_flow(grid_auto_flow type) { this->grid_auto_flow_ = type; }
 
-    void calc_layout();
+    // grid_layout_yaml.row_height
+    // 备注: 仅在 row_height_strategy 为 row_height_strategy_fix 时, 才需要设置 fixed_value
+    bool set_row_height(row_height_strategy type, optional<double> fixed_value = optional<double>());
+    row_height_strategy get_row_height_strategy() const { return this->row_height_strategy_; }
+    optional<double> get_row_height_fixed_value() const { return this->row_height_fixed_value_; }
+
+    // grid_layout_yaml.base_height
+    void set_base_height(double value);
+    double get_base_height() const { return this->base_height_; }
+
+    // grid_layout_yaml.row_gap
+    void set_row_gap(double value);
+    double get_row_gap() const { return this->row_gap_; }
+
+    // grid_layout_yaml.column_gap
+    // void set_column_gap(double value);
+    // double get_column_gap() const { return this->column_gap_; }
+
+    // grid_layout_yaml.padding
+    // [top right bottom left]
+    std::array<double, 4> get_padding() { return this->padding_; }
+    void set_padding(double top, double right, double bottom, double left);
+
+    const vector<double>& get_row_height() const { return this->row_height_; }
+    const vector<double>& get_row_start() const { return this->row_start_; }
+
+    // 获取容器自身高度, 仅在 calc_layout 调用成功后有效
+    // 应该依据该值, 结合上下的 padding, 来确定容器的可见布局区域
+    double get_height();
+
+public:
+    /**
+     * 核心布局函数
+     * 
+     * @param height 非空则指明固定高度, 为空则标识高度自适应
+     * 
+     * @return 返回布局是否成功
+     * 
+     * @note
+     *  1.row_height_strategy 为 row_height_strategy_fill 和自身高度自适应互斥
+    */
+    bool calc_layout(optional<double> height = optional<double>());
+
+#ifdef SZN_DEBUG
+public:
+    void print();
+#endif
+
+private:
+    // 布局前, 对部分参数进行重置
+    void reset();
 
 private:
     // 基于 grid 当前的行列数, 判断指定的区域是否可用
@@ -77,19 +127,39 @@ private:
     // 占用指定区域
     void take_area(uint32_t row, uint32_t column, uint32_t row_span, uint32_t column_span, p_node &node);
 
-    // 布局前, 对部分参数进行重置
-    void reset();
-
-#ifdef SZN_DEBUG
-public:
-    void print();
-#endif
+private:
+    // 计算行高、行起始位置
+    void calc_row_info();
 
 private:
     uint32_t column_count_ = -1;
     uint32_t row_count_ = 1;
+    optional<uint32_t> min_row_;
 
     grid_auto_flow grid_auto_flow_ = grid_auto_flow_row_dense;
+
+    row_height_strategy row_height_strategy_ = row_height_strategy_fix;
+    optional<double> row_height_fixed_value_ = 1.0;
+
+    // 非空则指明固定高度, 为空则标识高度自适应
+    optional<double> height_;
+
+    // align vertical_align_ = align_start;
+
+    double row_gap_ = 0;
+    // double column_gap_ = 0;
+
+    // padding [top right bottom left]
+    std::array<double, 4> padding_ = {};
+
+    // 每行高度
+    vector<double> row_height_;
+
+    // 每行的起始位置
+    vector<double> row_start_;
+
+    // 用于行高计算循环依赖或该行是空行时, 使用该值作为基准值
+    double base_height_ = 1.0;
 
     // grid 的有序子项集合
     vector<p_node> nodes_;

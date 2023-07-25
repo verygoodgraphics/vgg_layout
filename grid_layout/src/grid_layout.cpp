@@ -1,12 +1,18 @@
 ﻿#include <deque>
 #include <algorithm>
+#include <numeric>
 #include "./grid_layout.h"
 
 using std::deque;
 
-grid_layout::grid_layout(int column_count) : column_count_(column_count)
+grid_layout::grid_layout(uint32_t column_count, optional<uint32_t> min_row)
+ : column_count_(column_count), min_row_(min_row)
 {
-    assert(this->column_count_ >= 1);
+    if (!column_count_)
+    {
+        assert(false);
+        column_count_ = 1;
+    }
 }
 
 bool grid_layout::add_child(p_node &child, size_t id)
@@ -123,9 +129,70 @@ void grid_layout::take_area(uint32_t row, uint32_t column, uint32_t row_span, ui
     }
 }
 
-void grid_layout::calc_layout()
+bool grid_layout::set_row_height(row_height_strategy type, optional<double> fixed_value)
 {
+    if (type == row_height_strategy_fix && !fixed_value.has_value())
+    {
+        return false;
+    }
+
+    row_height_strategy_ = type;
+    row_height_fixed_value_ = fixed_value;
+
+    return true;
+}
+
+void grid_layout::set_base_height(double value)
+{
+    assert(value >= 0);
+    this->base_height_ = (std::max)(value, 0.0);
+}
+
+void grid_layout::set_row_gap(double value)
+{
+    assert(value >= 0);
+    this->row_gap_ = (std::max)(value, 0.0);
+}
+
+// void grid_layout::set_column_gap(double value)
+// {
+//     assert(value >= 0);
+//     this->column_gap_ = (std::max)(value, 0.0);
+// }
+
+void grid_layout::set_padding(double top, double right, double bottom, double left)
+{
+    assert(top >= 0.0);
+    assert(right >= 0.0);
+    assert(bottom >= 0.0);
+    assert(left >= 0.0);
+    
+    this->padding_[0] = (std::max)(top, 0.0);
+    this->padding_[1] = (std::max)(right, 0.0);
+    this->padding_[2] = (std::max)(bottom, 0.0);
+    this->padding_[3] = (std::max)(left, 0.0);
+}
+
+double grid_layout::get_height()
+{
+    if (!this->height_.has_value())
+    {
+        return -1;
+    }
+
+    return *this->height_;
+}
+
+bool grid_layout::calc_layout(optional<double> height)
+{
+    if (this->row_height_strategy_ == row_height_strategy_fill && !height.has_value())
+    {
+        // 行高度策略为 fill 时, 容器自身高度必须是一个固定值
+        return false;
+    }
+
     this->reset();
+    height_ = height;
     
     std::deque<p_node> node_fixed;
     for (auto &item : this->nodes_)
@@ -172,15 +239,114 @@ void grid_layout::calc_layout()
     }
 
     // 修正行数, 将 item_pos_strategy = item_pos_strategy_fix 的 node 纳入到最终布局中
-    auto last_row = this->cells_.rbegin()->first + 1;
-    assert(this->row_count_ <= last_row);
-    this->row_count_ = last_row;
+    if (!this->cells_.empty())
+    {
+        auto last_row = this->cells_.rbegin()->first + 1;
+        assert(this->row_count_ <= last_row);
+        this->row_count_ = last_row;        
+    }
+    if (this->min_row_.has_value())
+    {
+        this->row_count_ = (std::max)(this->row_count_, *this->min_row_);
+    }
+
+    this->calc_row_info();
+
+    return true;
 }
 
 void grid_layout::reset()
 {
     this->row_count_ = 1;
     this->cells_.clear();
+}
+
+void grid_layout::calc_row_info()
+{
+    row_height_.resize(this->row_count_);
+    row_start_.resize(this->row_count_);
+
+    assert(row_gap_ >= 0.0 && row_count_ >= 1);
+    const double total_gap = (row_count_ - 1) * row_gap_;
+
+    // 获取每行高度
+    if (this->row_height_strategy_ == row_height_strategy_fill)
+    {
+        assert(this->height_.has_value());
+        
+        double available_height = *this->height_ - padding_[0] - padding_[2] - total_gap;
+        available_height = (std::max)(available_height, 0.0);
+
+        std::fill(row_height_.begin(), row_height_.end(), available_height / row_count_);
+    }
+    else if (this->row_height_strategy_ == row_height_strategy_fix)
+    {
+        assert(this->row_height_fixed_value_.has_value());
+        std::fill(row_height_.begin(), row_height_.end(), *row_height_fixed_value_);
+    }
+    else 
+    {
+        assert(this->row_height_strategy_ == row_height_strategy_fit);
+
+        for (uint32_t i = 0; i < this->row_count_; ++i)
+        {
+            auto it = this->cells_.find(i);
+
+            if (it == this->cells_.end())
+            {
+                // 空行
+                this->row_height_.at(i) = this->base_height_;
+            }
+            else
+            {
+                double max_height = -1;
+                double max_percent = -1;
+
+                for (auto &node : it->second)
+                {
+                    auto node_height = node.second->get_height();
+                    if (std::get<0>(node_height) == length_unit::length_unit_point)
+                    {
+                        max_height = (std::max)(max_height, std::get<1>(node_height));
+                    }
+                    else 
+                    {
+                        max_percent = (std::max)(max_percent, std::get<1>(node_height));
+                    }
+                }
+
+                if (max_height < 0)
+                {
+                    // 当前行的高度均为 length_unit_percent
+                    this->row_height_.at(i) = max_percent * this->base_height_ / 100.0;
+                }
+                else 
+                {
+                    this->row_height_.at(i) = max_height;
+                }
+            }
+        }
+    }
+
+    double total_row_height = std::accumulate(row_height_.begin(), row_height_.end(), 0.0);
+
+    // 计算每行的起始位置
+    double start = this->padding_[0];
+    for (uint32_t i = 0; i < this->row_count_; ++i)
+    {
+        row_start_.at(i) = start;
+        start += row_height_.at(i);
+        start += this->row_gap_;
+    }
+
+    assert(this->row_height_.size() == this->row_count_);
+    assert(this->row_start_.size() == this->row_count_);    
+
+    // 设置自适应高度
+    if (!this->height_.has_value())
+    {
+        this->height_ = total_row_height + total_gap + padding_[0] + padding_[2];
+    }
 }
 
 #ifdef SZN_DEBUG

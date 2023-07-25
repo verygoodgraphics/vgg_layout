@@ -2,10 +2,29 @@
 #define VGG_GRID_ITEM
 
 #include <stdint.h>
+#include <cassert>
+#include <tuple>
 #include "./define.h"
+
+using std::tuple;
 
 class grid_item
 {
+public:
+    void set_width(length_unit unit_value, double value);
+    void set_min_width(length_unit unit_value, double value);
+    void set_max_width(length_unit unit_value, double value);
+    tuple<length_unit, double> get_width() const { return this->width_; }
+    tuple<length_unit, double> get_min_width() const { return this->min_width_; }
+    tuple<length_unit, double> get_max_width() const { return this->max_width_; }
+
+    void set_height(length_unit unit_value, double value);
+    void set_min_height(length_unit unit_value, double value);
+    void set_max_height(length_unit unit_value, double value);
+    tuple<length_unit, double> get_height() { return this->height_; }
+    tuple<length_unit, double> get_min_height() { return this->min_height_; }
+    tuple<length_unit, double> get_max_height() { return this->max_height_; }
+
 public:
     void set_item_pos_strategy(item_pos_strategy type) { this->item_pos_strategy_ = type; }
     item_pos_strategy get_item_pos_strategy() const { return this->item_pos_strategy_; }
@@ -21,6 +40,15 @@ public:
 
     void set_column_span(uint32_t span) { this->column_span_ = span; }
     uint32_t get_column_span() const { return this->column_span_; }
+
+private:
+    tuple<length_unit, double> width_;
+    tuple<length_unit, double> min_width_;
+    tuple<length_unit, double> max_width_;
+
+    tuple<length_unit, double> height_;
+    tuple<length_unit, double> min_height_;
+    tuple<length_unit, double> max_height_;
 
 private:
     item_pos_strategy item_pos_strategy_ = item_pos_strategy_auto;

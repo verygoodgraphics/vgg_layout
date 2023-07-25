@@ -1,6 +1,42 @@
 ﻿#include "grid_item.h"
 #include <cmath>
 
+void set_length(tuple<length_unit, double> &in, length_unit unit_value, double value)
+{
+    assert(value >= 0);
+    in = std::make_tuple(unit_value, (std::max)(value, 0.0));
+}
+
+void grid_item::set_width(length_unit unit_value, double value)
+{
+    set_length(width_, unit_value, value);
+}
+
+void grid_item::set_min_width(length_unit unit_value, double value)
+{
+    set_length(min_width_, unit_value, value);
+}
+
+void grid_item::set_max_width(length_unit unit_value, double value)
+{
+    set_length(max_width_, unit_value, value);
+}
+
+void grid_item::set_height(length_unit unit_value, double value)
+{
+    set_length(height_, unit_value, value);
+}
+
+void grid_item::set_min_height(length_unit unit_value, double value)
+{
+    set_length(min_height_, unit_value, value);
+}
+
+void grid_item::set_max_height(length_unit unit_value, double value)
+{
+    set_length(max_height_, unit_value, value);
+}
+
 bool area_conflict(const grid_item &item1, const grid_item &item2)
 {
     if (item1.get_item_pos_strategy() != item_pos_strategy_fix || item2.get_item_pos_strategy() != item_pos_strategy_fix)
