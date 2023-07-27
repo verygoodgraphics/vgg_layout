@@ -1,6 +1,7 @@
 ﻿#include <deque>
 #include <algorithm>
 #include <numeric>
+#include "./utility.h"
 #include "./grid_layout.h"
 
 using std::deque;
@@ -142,38 +143,41 @@ bool grid_layout::set_row_height(row_height_strategy type, optional<double> fixe
     return true;
 }
 
+void grid_layout::set_column_width(column_width_strategy type, double value)
+{
+    this->column_width_strategy_ = type;
+    this->column_width_strategy_width_value_ = insure_nonnegative(value);
+}
+
+tuple<column_width_strategy, double> grid_layout::get_column_width() const
+{
+    return std::make_tuple(this->column_width_strategy_, this->column_width_strategy_width_value_);
+}
+
 void grid_layout::set_base_height(double value)
 {
-    assert(value >= 0);
-    this->base_height_ = (std::max)(value, 0.0);
+    this->base_height_ = insure_nonnegative(value);
 }
 
 void grid_layout::set_row_gap(double value)
 {
-    assert(value >= 0);
-    this->row_gap_ = (std::max)(value, 0.0);
+    this->row_gap_ = insure_nonnegative(value);
 }
 
-// void grid_layout::set_column_gap(double value)
-// {
-//     assert(value >= 0);
-//     this->column_gap_ = (std::max)(value, 0.0);
-// }
+void grid_layout::set_column_gap(double value)
+{
+    this->column_gap_ = insure_nonnegative(value);
+}
 
 void grid_layout::set_padding(double top, double right, double bottom, double left)
 {
-    assert(top >= 0.0);
-    assert(right >= 0.0);
-    assert(bottom >= 0.0);
-    assert(left >= 0.0);
-    
-    this->padding_[0] = (std::max)(top, 0.0);
-    this->padding_[1] = (std::max)(right, 0.0);
-    this->padding_[2] = (std::max)(bottom, 0.0);
-    this->padding_[3] = (std::max)(left, 0.0);
+    this->padding_[0] = insure_nonnegative(top);
+    this->padding_[1] = insure_nonnegative(right);
+    this->padding_[2] = insure_nonnegative(bottom);
+    this->padding_[3] = insure_nonnegative(left);
 }
 
-double grid_layout::get_height()
+double grid_layout::get_layout_height()
 {
     if (!this->height_.has_value())
     {
@@ -183,16 +187,31 @@ double grid_layout::get_height()
     return *this->height_;
 }
 
-bool grid_layout::calc_layout(optional<double> height)
+double grid_layout::get_layout_width()
+{
+    if (!this->width_.has_value())
+    {
+        return -1;
+    }
+
+    return *this->width_;
+}
+
+bool grid_layout::calc_layout(optional<double> height, optional<double> width)
 {
     if (this->row_height_strategy_ == row_height_strategy_fill && !height.has_value())
     {
-        // 行高度策略为 fill 时, 容器自身高度必须是一个固定值
+        return false;
+    }
+
+    if (this->column_width_strategy_ == column_width_strategy_min && !width.has_value())
+    {
         return false;
     }
 
     this->reset();
     height_ = height;
+    width_ = width;
     
     std::deque<p_node> node_fixed;
     for (auto &item : this->nodes_)
@@ -251,6 +270,7 @@ bool grid_layout::calc_layout(optional<double> height)
     }
 
     this->calc_row_info();
+    this->calc_column_info();
 
     return true;
 }
@@ -349,6 +369,64 @@ void grid_layout::calc_row_info()
     }
 }
 
+void grid_layout::calc_column_info()
+{    
+    column_start_.resize(this->column_count_);
+
+    assert(column_gap_ >= 0.0 && column_count_ >= 1);
+    const double total_gap = (column_count_ - 1) * column_gap_;
+
+    // 计算每列宽度
+    if (this->column_width_strategy_ == column_width_strategy_fix)
+    {
+        this->column_width_ = this->column_width_strategy_width_value_;
+    }
+    else
+    {
+        assert(this->column_width_strategy_ == column_width_strategy_min);
+        assert(this->width_.has_value());
+
+        double available_width = *this->width_ - (padding_[1] + padding_[3] + total_gap);
+        this->column_width_ = (std::max)(available_width / this->column_count_, this->column_width_strategy_width_value_);
+    }
+
+    // 列宽总和(含 gap)
+    double sum_of_column = this->column_width_ * this->column_count_ + total_gap;
+    
+    // 宽度自适应
+    if (!this->width_.has_value())
+    {
+        this->width_ = sum_of_column + padding_[3] + padding_[1];
+    }
+
+    // 对齐
+    if (this->horizontal_align_ == align_start || this->horizontal_align_ == align_center)
+    {
+        double start = this->horizontal_align_ == align_start ? this->padding_[3] : 
+            deal_align_center(padding_[3], padding_[1], sum_of_column, *this->width_);
+        for (uint32_t i = 0; i < this->column_count_; ++i)
+        {
+            this->column_start_.at(i) = start;
+            start += this->column_width_;
+            start += this->column_gap_;
+        }
+    }
+    else
+    {
+        assert(this->horizontal_align_ == align_end);
+
+        double start = *this->width_ - this->padding_[1];
+        for (long long i = this->column_count_ - 1; i >= 0; --i)
+        {
+            start -= this->column_width_;
+            this->column_start_.at(i) = start;
+            start -= this->column_gap_;
+        }
+    }
+
+    assert(this->column_start_.size() == this->column_count_);
+}
+
 #ifdef SZN_DEBUG
 #include <fstream>
 void grid_layout::print()
@@ -376,236 +454,3 @@ void grid_layout::print()
     }
 }
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// bool grid_layout::set_expand_strategy(expand_strategy type, int min_row, int column_count)
-// {
-
-
-//     if (type == expand_strategy_auto)
-//     {
-//         if (!this->width_.has_value())
-//         {
-//             // 备注: 高度未知的情况下, 无法计算
-//             return false;
-//         }
-        
-        
-//     }
-
-
-//     // expand_strategy_ = type;
-//     // row_count_ = min_row;
-//     // column_count = column_count;
-//     return false;
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// 调试
-#include <iostream>
-#include <string>
-// 调试
-
-
-/*
-
-
-
-
-
-*/
-
-// void grid_layout::calc()
-// {
-    /*
-    1.计算行列数, 同时放置所有子项
-        A.auto: 列数 = width / column_width
-        B.fix-column: 列数固定, 自动扩展行数
-            a.放置所有指定行列的 node
-            b. grid_auto_flow
-                row: 在空的 cell 中, 按顺序排列 node
-                row dense: 放置 node 前, 先查询已排列的空间中是否有足够的地方放置 node, 若无则继续按顺序排列
-    
-    2.根据行高的策略, 计算每个行的高度
-    3.结合 gap padding cell_align row_align 行高总和 行宽总和, 放置 cells
-    4.可以得到每个 cell 的位置
-    5.根据每个子项的 top right bottom left width height 对齐方式, 获取子项在 cell 中的位置信息
-    6.得到每个子项相对于父项的绝对位置信息
-    */
-    
-    /*
-    this->column_width_ = 100;
-    this->column_count_ = 5;
-    this->row_count_ = 3;
-
-
-    auto print = [this](int row_count, int column_count)
-    {
-        for (int i = 0; i < row_count; ++i)
-        {
-            for (int j = 0; j < column_count; ++j)
-            {
-                try 
-                {
-                    if (this->cells_.at(i).at(j))
-                    {
-                        std::cout << "\t" << std::to_string(this->cells_.at(i).at(j)->n_id_) << "\t";
-                    }
-                }
-                catch(...)
-                {
-                    std::cout << "\t0\t";
-                }
-            }
-            std::cout << std::endl;
-        }
-    };
-
-    p_node node(new grid_item);
-    node->item_pos_strategy_ = item_pos_strategy_auto;
-    node->column_span_ = 2;
-    node->row_span_ = 2;
-    node->n_id_ = 1;
-    this->nodes_.emplace_back(node);
-
-    node.reset(new grid_item);
-    node->item_pos_strategy_ = item_pos_strategy_fix;
-    node->row_id_ = 2;
-    node->column_id_ = 0;
-    node->n_id_ = 2;
-    this->nodes_.emplace_back(node);
-
-    node.reset(new grid_item);
-    node->item_pos_strategy_ = item_pos_strategy_auto;
-    node->column_span_ = 1;
-    node->row_span_ = 1;
-    node->n_id_ = 3;
-    this->nodes_.emplace_back(node);
-
-    node.reset(new grid_item);
-    node->item_pos_strategy_ = item_pos_strategy_auto;
-    node->column_span_ = 3;
-    node->row_span_ = 1;
-    node->n_id_ = 4;
-    this->nodes_.emplace_back(node);    
-
-    node.reset(new grid_item);
-    node->item_pos_strategy_ = item_pos_strategy_auto;
-    node->column_span_ = 1;
-    node->row_span_ = 1;
-    node->n_id_ = 5;
-    this->nodes_.emplace_back(node);
-
-    node.reset(new grid_item);
-    node->item_pos_strategy_ = item_pos_strategy_auto;
-    node->column_span_ = 3;
-    node->row_span_ = 1;
-    node->n_id_ = 6;
-    this->nodes_.emplace_back(node);    
-
-    node.reset(new grid_item);
-    node->item_pos_strategy_ = item_pos_strategy_auto;
-    node->column_span_ = 1;
-    node->row_span_ = 1;
-    node->n_id_ = 7;
-    this->nodes_.emplace_back(node);    
-
-    for (auto &item : this->nodes_)
-    {
-        if (item->item_pos_strategy_ == item_pos_strategy_fix)
-        {
-            take(item->row_id_, item->column_id_, item->row_span_, item->column_span_, item);
-        }
-    }
-    this->nodes_.remove_if([](p_node &item){ return item->item_pos_strategy_ == item_pos_strategy_fix; });
-    
-    // row dense
-    if (true)
-    {
-        for (auto &item : this->nodes_)
-        {
-            auto tmp = item->n_id_;
-            assert(item->item_pos_strategy_ == item_pos_strategy_auto);
-
-            while (true)
-            {
-                auto re = get_free_pos(0, 0, item->row_span_, item->column_span_);
-                if (!re)
-                {
-                    ++row_count_;
-                }
-                else 
-                {
-                    this->take(std::get<0>(*re), std::get<1>(*re), item->row_span_, item->column_span_, item);
-                    break;
-                }
-            }
-        }
-        print(row_count_, column_count_);        
-    }
-    else 
-    {
-        // row
-        int now_row = 0;
-        for (auto &item : this->nodes_)
-        {
-            auto tmp = item->n_id_;
-            assert(item->item_pos_strategy_ == item_pos_strategy_auto);
-
-            while (true)
-            {
-                auto re = get_free_pos(now_row, 0, item->row_span_, item->column_span_);
-                if (!re)
-                {
-                    ++row_count_;
-                }
-                else 
-                {
-                    this->take(std::get<0>(*re), std::get<1>(*re), item->row_span_, item->column_span_, item);
-
-                    now_row = std::get<0>(*re);
-                    break;
-                }
-            }
-        }
-        print(row_count_, column_count_);     
-    }
-
-    return;
-*/    
-//}

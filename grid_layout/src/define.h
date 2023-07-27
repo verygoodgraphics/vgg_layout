@@ -27,11 +27,11 @@ enum grid_auto_flow
 //     expand_strategy_fix_column = 2
 // };
 
-// enum column_width_strategy
-// {
-//     column_width_strategy_min = 1,
-//     column_width_strategy_fix = 2
-// };
+enum column_width_strategy
+{
+    column_width_strategy_min = 1,
+    column_width_strategy_fix = 2
+};
 
 enum row_height_strategy
 {
@@ -40,12 +40,12 @@ enum row_height_strategy
     row_height_strategy_fix = 3
 };
 
-// enum align
-// {
-//     align_start = 1,
-//     align_center = 2,
-//     align_end = 3
-// };
+enum align
+{
+    align_start = 1,
+    align_center = 2,
+    align_end = 3
+};
 
 enum item_pos_strategy
 {

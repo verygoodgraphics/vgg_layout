@@ -57,9 +57,6 @@ public:
     size_t get_child_count() const { return this->nodes_.size(); }
 
 public:
-    uint32_t get_row_count() const { return this->row_count_; }
-    uint32_t get_column_count() const { return this->column_count_; }
-
     // grid_layout_yaml.grid_auto_flow
     grid_auto_flow get_grid_auto_flow() const { return this->grid_auto_flow_; }
     void set_grid_auto_flow(grid_auto_flow type) { this->grid_auto_flow_ = type; }
@@ -67,8 +64,11 @@ public:
     // grid_layout_yaml.row_height
     // 备注: 仅在 row_height_strategy 为 row_height_strategy_fix 时, 才需要设置 fixed_value
     bool set_row_height(row_height_strategy type, optional<double> fixed_value = optional<double>());
-    row_height_strategy get_row_height_strategy() const { return this->row_height_strategy_; }
-    optional<double> get_row_height_fixed_value() const { return this->row_height_fixed_value_; }
+    tuple<row_height_strategy, optional<double>> get_row_height() { return std::make_tuple(row_height_strategy_, row_height_fixed_value_); }
+
+    // grid_layout_yaml.column_width
+    void set_column_width(column_width_strategy type, double value);
+    tuple<column_width_strategy, double> get_column_width() const;
 
     // grid_layout_yaml.base_height
     void set_base_height(double value);
@@ -79,33 +79,46 @@ public:
     double get_row_gap() const { return this->row_gap_; }
 
     // grid_layout_yaml.column_gap
-    // void set_column_gap(double value);
-    // double get_column_gap() const { return this->column_gap_; }
+    void set_column_gap(double value);
+    double get_column_gap() const { return this->column_gap_; }
+
+    // grid_layout_yaml.cell_align
+    void set_horizontal_align(align type) { this->horizontal_align_ = type; }
+    align get_horizontal_align() const { return this->horizontal_align_; }
 
     // grid_layout_yaml.padding
     // [top right bottom left]
     std::array<double, 4> get_padding() { return this->padding_; }
     void set_padding(double top, double right, double bottom, double left);
 
-    const vector<double>& get_row_height() const { return this->row_height_; }
-    const vector<double>& get_row_start() const { return this->row_start_; }
+public:
+    uint32_t get_layout_row_count() const { return this->row_count_; }
+    uint32_t get_layout_column_count() const { return this->column_count_; }
 
-    // 获取容器自身高度, 仅在 calc_layout 调用成功后有效
-    // 应该依据该值, 结合上下的 padding, 来确定容器的可见布局区域
-    double get_height();
+    const vector<double>& get_layout_row_height() const { return this->row_height_; }
+    const vector<double>& get_layout_row_start() const { return this->row_start_; }
+
+    double get_layout_column_width() const { return this->column_width_; }
+    const vector<double>& get_layout_column_start() const { return this->column_start_; }
+
+    double get_layout_height();
+    double get_layout_width();
 
 public:
     /**
      * 核心布局函数
      * 
      * @param height 非空则指明固定高度, 为空则标识高度自适应
+     * @param width 非空则指明固定宽度, 为空则标识宽度自适应
      * 
      * @return 返回布局是否成功
      * 
      * @note
      *  1.row_height_strategy 为 row_height_strategy_fill 和自身高度自适应互斥
+     *  2.column_width_strategy 为 column_width_strategy_min 和自身宽度自适应互斥
     */
-    bool calc_layout(optional<double> height = optional<double>());
+    bool calc_layout(optional<double> height = optional<double>(),
+        optional<double> width = optional<double>());
 
 #ifdef SZN_DEBUG
 public:
@@ -131,6 +144,9 @@ private:
     // 计算行高、行起始位置
     void calc_row_info();
 
+    // 计算列宽、列起始位置
+    void calc_column_info();
+
 private:
     uint32_t column_count_ = -1;
     uint32_t row_count_ = 1;
@@ -141,13 +157,19 @@ private:
     row_height_strategy row_height_strategy_ = row_height_strategy_fix;
     optional<double> row_height_fixed_value_ = 1.0;
 
+    column_width_strategy column_width_strategy_ = column_width_strategy_fix;
+    double column_width_strategy_width_value_ = 1.0;
+
+    // 非空则指明固定宽度, 为空则标识宽度自适应
+    optional<double> width_;
+
     // 非空则指明固定高度, 为空则标识高度自适应
     optional<double> height_;
 
-    // align vertical_align_ = align_start;
+    align horizontal_align_ = align_start;
 
     double row_gap_ = 0;
-    // double column_gap_ = 0;
+    double column_gap_ = 0;
 
     // padding [top right bottom left]
     std::array<double, 4> padding_ = {};
@@ -157,6 +179,12 @@ private:
 
     // 每行的起始位置
     vector<double> row_start_;
+
+    // 每列宽度
+    double column_width_ = -1;
+
+    // 每列的起始位置
+    vector<double> column_start_;
 
     // 用于行高计算循环依赖或该行是空行时, 使用该值作为基准值
     double base_height_ = 1.0;
