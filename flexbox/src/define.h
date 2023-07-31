@@ -79,13 +79,18 @@ enum padding
 enum position
 {
     position_absolute = 0,
-
-    //szn_todo 
     //position_sticky,
     //position_fixed,
-
     position_relative,
 };
+/*
+备注:
+    1.sticky 的功能用 relative 拟合:
+        a.当 sticky 项距父边框位置符合 top right bottom left 约束时, 其行为等价于 relative 不含 trbl, 其中 top 和 left 优先级相对较高
+        b.当 sticky 项已不满足 top right bottom left 的约束时(注意需要考虑 padding), 在 relative (不含 trbl ) 坐标的基础上, 进行 top right bottom left 拟合
+    2.fixed 的功能用 absolute 拟合, 区别在于前者的坐标基于 viewport, 后者坐标基于当前父对象(本项目不支持 static)
+    3.不管是 flexbox 还是 grid, fixed 和 absolute 功能统一
+*/
 
 enum ltrb
 {

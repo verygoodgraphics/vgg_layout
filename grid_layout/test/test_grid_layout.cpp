@@ -458,6 +458,20 @@ TEST(RowInfo, RowHeightStrategyFill)
 
 TEST(RowInfo, RowHeightStrategyFit)
 {
+    // fit 和 row span 互斥, 导致布局失败
+    {
+        grid_layout grid(3, 3);
+
+        grid_layout::p_node node(new grid_item);
+        node->set_item_pos_strategy(item_pos_strategy_auto);
+        node->set_row_span(2);
+        node->set_column_span(1);
+        EXPECT_TRUE(grid.add_child(node));     
+
+        grid.set_row_height(row_height_strategy::row_height_strategy_fit);
+        EXPECT_TRUE(!grid.calc_layout());
+    }
+
     // 默认情况
     {
         grid_layout grid(5, 2);
@@ -506,7 +520,7 @@ TEST(RowInfo, RowHeightStrategyFit)
         node->set_item_pos_strategy(item_pos_strategy_auto);
         node->set_row_span(1);
         node->set_column_span(1);
-        node->set_height(length_unit::length_unit_point, 10);
+        node->set_height(std::make_tuple(length_unit::length_unit_point, 10));
         EXPECT_TRUE(grid.add_child(node));
 
         // (0, 1)
@@ -514,7 +528,7 @@ TEST(RowInfo, RowHeightStrategyFit)
         node->set_item_pos_strategy(item_pos_strategy_auto);
         node->set_row_span(1);
         node->set_column_span(1);
-        node->set_height(length_unit::length_unit_point, 20);
+        node->set_height(std::make_tuple(length_unit::length_unit_point, 20));
         EXPECT_TRUE(grid.add_child(node));     
 
         // (0, 2)
@@ -522,7 +536,7 @@ TEST(RowInfo, RowHeightStrategyFit)
         node->set_item_pos_strategy(item_pos_strategy_auto);
         node->set_row_span(1);
         node->set_column_span(1);
-        node->set_height(length_unit::length_unit_percent, 50);
+        node->set_height(std::make_tuple(length_unit::length_unit_percent, 50));
         EXPECT_TRUE(grid.add_child(node));  
 
         // (1, 0)
@@ -530,7 +544,7 @@ TEST(RowInfo, RowHeightStrategyFit)
         node->set_item_pos_strategy(item_pos_strategy_auto);
         node->set_row_span(1);
         node->set_column_span(1);
-        node->set_height(length_unit::length_unit_percent, 50);
+        node->set_height(std::make_tuple(length_unit::length_unit_percent, 50));
         EXPECT_TRUE(grid.add_child(node));
 
         // (1, 1)
@@ -538,7 +552,7 @@ TEST(RowInfo, RowHeightStrategyFit)
         node->set_item_pos_strategy(item_pos_strategy_auto);
         node->set_row_span(1);
         node->set_column_span(1);
-        node->set_height(length_unit::length_unit_percent, 60);
+        node->set_height(std::make_tuple(length_unit::length_unit_percent, 60));
         EXPECT_TRUE(grid.add_child(node)); 
 
         grid.set_padding(10, 20, 30, 40);

@@ -1,34 +1,102 @@
 ﻿#include "./grid_item.h"
 #include "./utility.h"
 
-void grid_item::set_width(length_unit unit_value, double value)
+void grid_item::set_width(t_length value)
 {
-    width_ = std::make_tuple(unit_value, insure_nonnegative(value));
+    width_ = std::make_tuple(std::get<0>(value), insure_nonnegative(std::get<1>(value)));
 }
 
-void grid_item::set_min_width(length_unit unit_value, double value)
+void grid_item::set_min_width(optional<t_length> value)
 {
-    min_width_ = std::make_tuple(unit_value, insure_nonnegative(value));
+    min_width_ = std::make_tuple(std::get<0>(*value), insure_nonnegative(std::get<1>(*value)));
 }
 
-void grid_item::set_max_width(length_unit unit_value, double value)
+void grid_item::set_max_width(optional<t_length> value)
 {
-    max_width_ = std::make_tuple(unit_value, insure_nonnegative(value));
+    max_width_ = std::make_tuple(std::get<0>(*value), insure_nonnegative(std::get<1>(*value)));
 }
 
-void grid_item::set_height(length_unit unit_value, double value)
+void grid_item::set_height(t_length value)
 {
-    height_ = std::make_tuple(unit_value, insure_nonnegative(value));
+    height_ = std::make_tuple(std::get<0>(value), insure_nonnegative(std::get<1>(value)));
 }
 
-void grid_item::set_min_height(length_unit unit_value, double value)
+void grid_item::set_min_height(optional<t_length> value)
 {
-    min_height_ = std::make_tuple(unit_value, insure_nonnegative(value));
+    min_height_ = std::make_tuple(std::get<0>(*value), insure_nonnegative(std::get<1>(*value)));
 }
 
-void grid_item::set_max_height(length_unit unit_value, double value)
+void grid_item::set_max_height(optional<t_length> value)
 {
-    max_height_ = std::make_tuple(unit_value, insure_nonnegative(value));
+    max_height_ = std::make_tuple(std::get<0>(*value), insure_nonnegative(std::get<1>(*value)));
+}
+
+double grid_item::calc_length(const t_length &length, const optional<t_length> &min_length,
+    const optional<t_length> &max_length, double parent_length)
+{
+    auto get = [](const tuple<length_unit, double> &value, double parent_value)
+    {
+        auto unit_value = std::get<0>(value);
+        auto real_value = std::get<1>(value);
+
+        if (unit_value == length_unit::length_unit_percent)
+        {
+            return parent_value * real_value / 100.0;
+        }
+        
+        assert(unit_value == length_unit::length_unit_point);
+        return real_value;
+    };
+
+    auto value = get(length, parent_length);
+    
+    if (max_length)
+    {
+        value = (std::min)(value, get(*max_length, parent_length));
+    }
+
+    if (min_length)
+    {
+        value = (std::max)(value, get(*min_length, parent_length));
+    }
+    
+    return value;
+}
+
+void grid_item::calc_layout(double cell_width, double cell_height)
+{
+    this->layout_width_ = grid_item::calc_length(this->width_, this->min_width_, this->max_width_, cell_width);
+    this->layout_height_ = grid_item::calc_length(this->height_, this->min_height_, this->max_height_, cell_height);
+
+    // 水平对齐
+    if (this->horizontal_align_ == align_start)
+    {
+        this->layout_left_ = 0;
+    }
+    else if (this->horizontal_align_ == align_center)
+    {
+        this->layout_left_ = deal_align_center(0, 0, this->layout_width_, cell_width);
+    }
+    else 
+    {
+        assert(this->horizontal_align_ == align_end);
+        this->layout_left_ = cell_width - this->layout_width_;
+    }
+
+    // 垂直对齐
+    if (this->vertical_align_ == align_start)
+    {
+        this->layout_top_ = 0;
+    }
+    else if (this->vertical_align_ == align_center)
+    {
+        this->layout_top_ = deal_align_center(0, 0, this->layout_height_, cell_height);
+    }
+    else 
+    {
+        assert(this->vertical_align_ == align_end);
+        this->layout_top_ = cell_height - this->layout_height_;
+    }
 }
 
 bool area_conflict(const grid_item &item1, const grid_item &item2)

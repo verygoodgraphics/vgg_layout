@@ -6,16 +6,12 @@
 #include <list>
 #include <map>
 #include <string>
-#include <array>
-#include <optional>
 #include "./grid_item.h"
 
 using std::shared_ptr;
 using std::vector;
 using std::map;
 using std::string;
-using std::array;
-using std::optional;
 
 class grid_layout
 {
@@ -24,6 +20,9 @@ public:
 
 public:
     // 用于计算 expand_strategy.strategy 是 auto 时, grid 具备的列数
+    // 备注:  
+    //      1.expand_strategy.strategy 是 auto 时, column_width.strategy 值应为 fix (否则有逻辑依赖问题)
+    //      2.因为本类不支持显示设置 expand_strategy.strategy, 所以第一点约束由使用者自行保证
     static uint32_t calc_column_count(double width, double column_width)
     {
         assert(width >= column_width && width > 0);
@@ -111,13 +110,14 @@ public:
      * @param height 非空则指明固定高度, 为空则标识高度自适应
      * @param width 非空则指明固定宽度, 为空则标识宽度自适应
      * 
-     * @return 返回布局是否成功
+     * @return 非空标识成功, 按序返回所有子项的布局信息: [top, left, width, height]
      * 
      * @note
      *  1.row_height_strategy 为 row_height_strategy_fill 和自身高度自适应互斥
      *  2.column_width_strategy 为 column_width_strategy_min 和自身宽度自适应互斥
+     *  3.row_height_strategy 为 row_height_strategy_fit 时, 禁止有子项 row_span 大于 1
     */
-    bool calc_layout(optional<double> height = optional<double>(),
+    optional<vector<array<double, 4>>> calc_layout(optional<double> height = optional<double>(),
         optional<double> width = optional<double>());
 
 #ifdef SZN_DEBUG

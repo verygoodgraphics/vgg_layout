@@ -197,16 +197,29 @@ double grid_layout::get_layout_width()
     return *this->width_;
 }
 
-bool grid_layout::calc_layout(optional<double> height, optional<double> width)
+optional<vector<array<double, 4>>> grid_layout::calc_layout(optional<double> height, optional<double> width)
 {
+    optional<vector<array<double, 4>>> result;
+
     if (this->row_height_strategy_ == row_height_strategy_fill && !height.has_value())
     {
-        return false;
+        return result;
     }
 
     if (this->column_width_strategy_ == column_width_strategy_min && !width.has_value())
     {
-        return false;
+        return result;
+    }
+
+    if (this->row_height_strategy_ == row_height_strategy_fit)
+    {
+        for (auto &item : this->nodes_)
+        {
+            if (item->get_row_span() > 1)
+            {
+                return result;
+            }
+        }
     }
 
     this->reset();
@@ -272,7 +285,25 @@ bool grid_layout::calc_layout(optional<double> height, optional<double> width)
     this->calc_row_info();
     this->calc_column_info();
 
-    return true;
+    result = vector<array<double, 4>>();
+
+    for (auto &item : this->nodes_)
+    {
+        auto row_id = item->get_row_id();
+        auto column_id = item->get_column_id();
+
+        item->calc_layout(this->column_width_ * item->get_row_span(), 
+            std::accumulate(this->row_height_.begin() + row_id, this->row_height_.begin() + row_id + item->get_row_span(), 0.0));
+
+        auto top = item->get_layout_top() + this->row_start_.at(row_id);
+        auto left = item->get_layout_left() + this->column_start_.at(column_id);
+        auto width = item->get_layout_width();
+        auto height = item->get_layout_height();
+
+        result->emplace_back(array<double, 4>{top, left, width, height});
+    }
+
+    return result;
 }
 
 void grid_layout::reset()
