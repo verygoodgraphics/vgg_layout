@@ -24,7 +24,7 @@
 
 import tkinter
 
-file_name = r'D:\work\project\github_project\vgg_contrib\build\flexbox\Debug\out.txt'
+file_name = r'D:\work\project\github_project\vgg_layout_with_test\build\vgg_layout\grid_layout\Debug\out.txt'
 
 # 创建窗口
 window = tkinter.Tk()
@@ -41,6 +41,8 @@ re = root.split(' ')
 # 创建画布
 canvas = tkinter.Canvas(window, width = float(re[2]), height = float(re[3]), bg = 'white')
 
+id = 1
+
 for line in lines:
     re = line.split(' ')
 
@@ -51,6 +53,8 @@ for line in lines:
 
     # 绘制矩形
     canvas.create_rectangle(left, top, left + width, top + height, fill = 'red')
+    canvas.create_text(left + width / 2, top + height / 2, text = str(id), font=("courier", 20))
+    id = id + 1
 
 # 包装画布
 canvas.pack()

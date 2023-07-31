@@ -54,7 +54,7 @@ bool grid_layout::add_child(size_t id)
     return add_child(child, id);
 }
 
-const grid_layout::p_node grid_layout::get_child(size_t id) const
+grid_layout::p_node grid_layout::get_child(size_t id)
 {
     if (id < this->nodes_.size())
     {
@@ -292,7 +292,7 @@ optional<vector<array<double, 4>>> grid_layout::calc_layout(optional<double> hei
         auto row_id = item->get_row_id();
         auto column_id = item->get_column_id();
 
-        item->calc_layout(this->column_width_ * item->get_row_span(), 
+        item->calc_layout(this->column_width_ * item->get_column_span(), 
             std::accumulate(this->row_height_.begin() + row_id, this->row_height_.begin() + row_id + item->get_row_span(), 0.0));
 
         auto top = item->get_layout_top() + this->row_start_.at(row_id);

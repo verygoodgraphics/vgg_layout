@@ -46,8 +46,9 @@ public:
     bool add_child(p_node &child, size_t id = -1);
     bool add_child(size_t id = -1);
 
-    // 禁止直接修改已加入布局的子项, 防止其属性修改后产生冲突
-    const p_node get_child(size_t id) const;
+    // 当调用该函数修改子项的布局策略时要小心, 因为布局器无法获取子项位置是否产生冲突
+    // grid_item.h 中的 area_conflict 函数, 可用于帮助检测子项位置是否冲突
+    p_node get_child(size_t id);
 
     // 删除指定的项, 并进行返回
     p_node remove_child(size_t id);
