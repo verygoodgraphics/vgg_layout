@@ -33,11 +33,9 @@ TEST(Child, AddChild)
     EXPECT_TRUE(root.child_count() == 1);
 
     flexbox_node::p_node child(new flexbox_node);
-    auto addr = child.get();
     EXPECT_TRUE(root.add_child(child, 0));
     EXPECT_TRUE(root.child_count() == 2);
-    EXPECT_TRUE(child == nullptr);
-    EXPECT_TRUE(root.get_child(0) == addr);
+    EXPECT_TRUE(root.get_child(0) == child);
 
     EXPECT_TRUE(!root.add_child(1024));
 }
@@ -48,12 +46,11 @@ TEST(Child, RemoveChild)
     EXPECT_TRUE(root.add_child());
 
     flexbox_node::p_node child(new flexbox_node);
-    auto addr = child.get();
     EXPECT_TRUE(root.add_child(child));
 
     EXPECT_TRUE(root.remove_child(0));
     EXPECT_TRUE(root.child_count() == 1);
-    EXPECT_TRUE(root.get_child(0) == addr);
+    EXPECT_TRUE(root.get_child(0) == child);
     EXPECT_TRUE(!root.remove_child(1024));
 }
 
@@ -77,13 +74,12 @@ TEST(Child, ReuseChild)
     EXPECT_TRUE(root.add_child());
 
     flexbox_node::p_node child(new flexbox_node);
-    auto addr = child.get();
     EXPECT_TRUE(root.add_child(child));
     
     auto node = root.remove_child(1);
     EXPECT_TRUE(node);
-    EXPECT_TRUE(node.get() == addr);
+    EXPECT_TRUE(node == child);
 
     EXPECT_TRUE(root.add_child(node, 0));
-    EXPECT_TRUE(root.get_child(0) == addr);
+    EXPECT_TRUE(root.get_child(0) == child);
 }
