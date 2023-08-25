@@ -59,7 +59,7 @@ void print_node(flexbox_node *root)
 
     for (uint32_t i = 0; i < root->child_count(); ++i)
     {
-        write_node_info(root->get_child(i).get(), ofs);
+        write_node_info(root->get_child(i), ofs);
     }
 }
 

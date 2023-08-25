@@ -59,7 +59,7 @@ bool flexbox_node::add_child(uint32_t id)
     return this->add_child(child, id);
 }
 
-bool flexbox_node::add_child(p_node child, uint32_t id)
+bool flexbox_node::add_child(p_node &child, uint32_t id)
 {
     auto count = YGNodeGetChildCount(this->node_);
     if (id == -1)
@@ -72,7 +72,7 @@ bool flexbox_node::add_child(p_node child, uint32_t id)
     }
 
     YGNodeInsertChild(this->node_, child->node_, id);
-    childs_.insert(childs_.begin() + id, child);
+    childs_.insert(childs_.begin() + id, std::move(child));
     return true;
 }
 
@@ -91,14 +91,14 @@ flexbox_node::p_node flexbox_node::remove_child(uint32_t id)
     return node;
 }
 
-flexbox_node::p_node flexbox_node::get_child(uint32_t id) const
+flexbox_node *flexbox_node::get_child(uint32_t id) const
 {
     if (id >= static_cast<uint32_t>(this->childs_.size()))
     {
         return nullptr;
     }
     
-    return this->childs_.at(id);
+    return this->childs_.at(id).get();
 }
 
 uint32_t flexbox_node::child_count() const

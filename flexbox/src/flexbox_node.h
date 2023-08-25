@@ -32,7 +32,7 @@ SOFTWARE.
 #include "./change.h"
 
 using std::vector;
-using std::shared_ptr;
+using std::unique_ptr;
 using std::optional;
 using std::tuple;
 
@@ -44,7 +44,7 @@ public:
     ~flexbox_node();
     
 public:    
-    typedef shared_ptr<flexbox_node> p_node;
+    typedef unique_ptr<flexbox_node> p_node;
 
 public:
     /**
@@ -54,8 +54,10 @@ public:
      * @param id 子项被添加的位置, -1 标识插入到末尾
      * 
      * @return 操作是否成功
+     * 
+     * @note 若操作执行成功, 则 child 将被 move 到内部
     */
-    bool add_child(p_node child, uint32_t id = -1);
+    bool add_child(p_node &child, uint32_t id = -1);
     bool add_child(uint32_t id = -1);
 
     /**
@@ -74,7 +76,7 @@ public:
      * 
      * @return 返回 nullptr 标识失败, 否则返回指定子项
     */
-    p_node get_child(uint32_t id) const;
+    flexbox_node *get_child(uint32_t id) const;
 
     // 获取子项个数
     uint32_t child_count() const;
