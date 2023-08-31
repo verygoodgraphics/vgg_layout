@@ -44,9 +44,9 @@ public:
 
 public:
     // 用于计算 expand_strategy.strategy 是 auto 时, grid 具备的列数
-    // 备注:  
-    //      1.expand_strategy.strategy 是 auto 时, column_width.strategy 值应为 fix (否则有逻辑依赖问题)
-    //      2.因为本类不支持显示设置 expand_strategy.strategy, 所以第一点约束由使用者自行保证
+    // 备注: 
+    //  1.本类不支持显示设置 expand_strategy.strategy, 逻辑都是基于 expand_strategy.strategy 为 fix-column 编写的
+    //  2.原因: 在布局过程中, 任意时刻, 列数总是是一个固定值
     static uint32_t calc_column_count(double width, double column_width)
     {
         assert(width >= column_width && width > 0);
