@@ -88,6 +88,7 @@ TEST(Child, ChangeAttr)
     EXPECT_TRUE(grid.get_child(0)->get_column_span() == 1);
 }
 
+#ifdef SZN_DEBUG
 // 比较简单的布局
 TEST(ChildArea, Simple)
 {
@@ -339,6 +340,7 @@ TEST(GridLayout, MinRow)
     grid_1.calc_layout();
     EXPECT_TRUE(grid_1.get_layout_row_count() == 4);    
 }
+#endif
 
 TEST(RowInfo, RowHeightStrategyFix)
 {

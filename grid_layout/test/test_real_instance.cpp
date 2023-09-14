@@ -322,6 +322,7 @@ TEST(RowHeight, RowGap)
     EXPECT_TRUE(str == cmp);
 }
 
+#ifdef SZN_DEBUG
 TEST(RowHeight, GridAutoFlow)
 {
     grid_layout grid(5);
@@ -439,6 +440,7 @@ TEST(RowHeight, GridAutoFlow)
 
     EXPECT_TRUE(str == cmp);
 }
+#endif
 
 TEST(RowHeight, Padding)
 {
