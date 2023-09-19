@@ -14,6 +14,11 @@ add_library(flexbox ${all_h} ${all_hpp} ${all_cpp})
 target_link_libraries(flexbox PUBLIC yogacore)
 target_include_directories(flexbox PUBLIC ${VGG_CONTRIB_BOOST_INCLUDE} ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
+# for webassembly
+if(EMSCRIPTEN)
+  target_compile_definitions(flexbox PUBLIC BOOST_NO_CXX98_FUNCTION_BASE)
+endif()
+
 # flexbox_test
 if(open_vgg_layout_test)
     file(GLOB_RECURSE test_cpp ${CMAKE_CURRENT_SOURCE_DIR}/test/*.cpp)

@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.13.0)
 project(vgg_layout VERSION 0.1.0)
 
+if (MSVC)
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+endif()
+
 option(open_vgg_layout_test "open vgg_layout test" ON)
 if(open_vgg_layout_test)
     include(FetchContent)
