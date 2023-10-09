@@ -171,6 +171,11 @@ float flexbox_node::get_grow() const
     return YGNodeStyleGetFlexGrow(this->node_);
 }
 
+float flexbox_node::get_shrink() const
+{
+    return YGNodeStyleGetFlexShrink(this->node_);
+}
+
 overflow flexbox_node::get_overflow() const
 {
     return get_property(this->node_, YGNodeStyleGetOverflow, change::change_overflow());
@@ -236,6 +241,11 @@ void flexbox_node::set_ltrb(ltrb ltrb_value, float value)
 void flexbox_node::set_grow(float value)
 {
     YGNodeStyleSetFlexGrow(this->node_, value);
+}
+
+void flexbox_node::set_shrink(float value)
+{
+    YGNodeStyleSetFlexShrink(this->node_, value);
 }
 
 void flexbox_node::set_overflow(overflow value)

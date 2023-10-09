@@ -112,6 +112,9 @@ public:
     float get_grow() const;
     void set_grow(float value);
 
+    float get_shrink() const;
+    void set_shrink(float value);
+
     overflow get_overflow() const;
     void set_overflow(overflow value);
 
