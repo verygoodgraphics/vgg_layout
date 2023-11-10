@@ -27,21 +27,44 @@ SOFTWARE.
 
 #include "yoga/Yoga.h"
 #include "./define.h"
-#include "boost/bimap.hpp"
+#include <map>
+
+template<typename t_left, typename t_right>
+class bimap
+{
+private:
+    std::map<t_left, t_right> left_;
+    std::map<t_right, t_left> right_;
+
+public:
+    auto left() const { return this->left_; }
+    auto right() const { return this->right_; }
+
+    void insert(const std::pair<t_left, t_right> &value)
+    {
+        left_.insert(value);
+        right_.insert(std::make_pair(value.second, value.first));
+    }
+
+    bool empty() const
+    {
+        return left_.empty();
+    }
+};
 
 class change
 {
 private:
-    static boost::bimap<direction, YGFlexDirection> change_direction_;
-    static boost::bimap<justify_content, YGJustify> change_justify_content_;
-    static boost::bimap<align_items, YGAlign> change_align_items_;
-    static boost::bimap<align_content, YGAlign> change_align_content_;
-    static boost::bimap<wrap, YGWrap> change_wrap_;
-    static boost::bimap<gap, YGGutter> change_gap_;
-    static boost::bimap<padding, YGEdge> change_padding_;
-    static boost::bimap<position, YGPositionType> change_position_;
-    static boost::bimap<ltrb, YGEdge> change_ltrb_;
-    static boost::bimap<overflow, YGOverflow> change_overflow_;
+    static bimap<direction, YGFlexDirection> change_direction_;
+    static bimap<justify_content, YGJustify> change_justify_content_;
+    static bimap<align_items, YGAlign> change_align_items_;
+    static bimap<align_content, YGAlign> change_align_content_;
+    static bimap<wrap, YGWrap> change_wrap_;
+    static bimap<gap, YGGutter> change_gap_;
+    static bimap<padding, YGEdge> change_padding_;
+    static bimap<position, YGPositionType> change_position_;
+    static bimap<ltrb, YGEdge> change_ltrb_;
+    static bimap<overflow, YGOverflow> change_overflow_;
     
 public:
     static void init();

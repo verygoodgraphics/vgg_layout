@@ -110,13 +110,13 @@ uint32_t flexbox_node::child_count() const
 template<typename t_yoga_fun, typename t_change>
 auto get_property(YGNodeRef node, t_yoga_fun fun_yoga, const t_change &change)
 {
-    return change.right.find(fun_yoga(node))->second;
+    return change.right().find(fun_yoga(node))->second;
 }
 
 template<typename t_yoga_fun, typename t_change, typename t_value>
 auto get_property(YGNodeRef node, t_yoga_fun fun_yoga, const t_change &change, t_value value)
 {
-    return fun_yoga(node, change.left.find(value)->second);
+    return fun_yoga(node, change.left().find(value)->second);
 }
 
 direction flexbox_node::get_direction() const
@@ -184,13 +184,13 @@ overflow flexbox_node::get_overflow() const
 template<typename t_yoga_fun, typename t_change, typename t_value>
 void set_property(YGNodeRef node, t_yoga_fun fun_yoga, const t_change &change, t_value value)
 {
-    fun_yoga(node, change.left.find(value)->second);
+    fun_yoga(node, change.left().find(value)->second);
 }
 
 template<typename t_yoga_fun, typename t_change, typename t_value, typename t_set_value>
 void set_property(YGNodeRef node, t_yoga_fun fun_yoga, const t_change &change, t_value value, t_set_value set_value)
 {
-    fun_yoga(node, change.left.find(value)->second, set_value);
+    fun_yoga(node, change.left().find(value)->second, set_value);
 }
 
 void flexbox_node::set_direction(direction value)

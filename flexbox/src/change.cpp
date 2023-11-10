@@ -24,16 +24,16 @@ SOFTWARE.
 
 #include "./change.h"
 
-boost::bimap<direction, YGFlexDirection> change::change_direction_;
-boost::bimap<justify_content, YGJustify> change::change_justify_content_;
-boost::bimap<align_items, YGAlign> change::change_align_items_;
-boost::bimap<align_content, YGAlign> change::change_align_content_;
-boost::bimap<wrap, YGWrap> change::change_wrap_;
-boost::bimap<gap, YGGutter> change::change_gap_;
-boost::bimap<padding, YGEdge> change::change_padding_;
-boost::bimap<position, YGPositionType> change::change_position_;
-boost::bimap<ltrb, YGEdge> change::change_ltrb_;
-boost::bimap<overflow, YGOverflow> change::change_overflow_;
+bimap<direction, YGFlexDirection> change::change_direction_;
+bimap<justify_content, YGJustify> change::change_justify_content_;
+bimap<align_items, YGAlign> change::change_align_items_;
+bimap<align_content, YGAlign> change::change_align_content_;
+bimap<wrap, YGWrap> change::change_wrap_;
+bimap<gap, YGGutter> change::change_gap_;
+bimap<padding, YGEdge> change::change_padding_;
+bimap<position, YGPositionType> change::change_position_;
+bimap<ltrb, YGEdge> change::change_ltrb_;
+bimap<overflow, YGOverflow> change::change_overflow_;
 
 void change::init()
 {
