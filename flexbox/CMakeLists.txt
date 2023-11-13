@@ -21,4 +21,4 @@ if(open_vgg_layout_test)
     target_link_libraries(flexbox_test PRIVATE gtest_main flexbox)   
 endif()
 
-install(TARGETS flexbox yogacore COMPONENT vgg_flexbox)
+install(TARGETS flexbox yogacore COMPONENT vgg_module_flexbox)

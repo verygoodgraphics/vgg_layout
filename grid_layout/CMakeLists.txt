@@ -20,4 +20,4 @@ if(open_vgg_layout_test)
     target_link_libraries(grid_layout_gtest PRIVATE gtest_main grid_layout)
 endif()
 
-install(TARGETS grid_layout COMPONENT vgg_grid_layout)
+install(TARGETS grid_layout COMPONENT vgg_module_grid_layout)
