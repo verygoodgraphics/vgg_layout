@@ -14,10 +14,11 @@ add_library(flexbox ${all_h} ${all_hpp} ${all_cpp})
 target_link_libraries(flexbox PUBLIC yogacore)
 target_include_directories(flexbox PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-
 # flexbox_test
 if(open_vgg_layout_test)
     file(GLOB_RECURSE test_cpp ${CMAKE_CURRENT_SOURCE_DIR}/test/*.cpp)
     add_executable(flexbox_test ${test_cpp})
     target_link_libraries(flexbox_test PRIVATE gtest_main flexbox)   
 endif()
+
+install(TARGETS flexbox yogacore COMPONENT vgg_flexbox)

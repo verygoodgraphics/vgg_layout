@@ -19,3 +19,5 @@ if(open_vgg_layout_test)
     add_executable(grid_layout_gtest ${test_cpp})
     target_link_libraries(grid_layout_gtest PRIVATE gtest_main grid_layout)
 endif()
+
+install(TARGETS grid_layout COMPONENT vgg_grid_layout)
