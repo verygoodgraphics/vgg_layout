@@ -12,6 +12,7 @@ file(GLOB_RECURSE all_cpp ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${all_h} ${all_hpp} ${all_cpp})
 add_library(grid_layout ${all_h} ${all_hpp} ${all_cpp})
 target_include_directories(grid_layout PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set_target_properties(grid_layout PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # grid_layout_gtest
 if(open_vgg_layout_test)

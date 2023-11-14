@@ -13,6 +13,8 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${all_h} ${all_hpp} ${all_cp
 add_library(flexbox ${all_h} ${all_hpp} ${all_cpp})
 target_link_libraries(flexbox PUBLIC yogacore)
 target_include_directories(flexbox PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set_target_properties(yogacore PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties(flexbox PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # flexbox_test
 if(open_vgg_layout_test)
