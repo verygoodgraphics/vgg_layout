@@ -3,6 +3,8 @@ project(vgg_layout VERSION 0.1.0)
 
 if (MSVC)
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
 endif()
 
 option(open_vgg_layout_test "open vgg_layout test" ON)

@@ -42,7 +42,7 @@ grid_layout::grid_layout(uint32_t column_count, optional<uint32_t> min_row)
 
 bool grid_layout::add_child(p_node &child, size_t id)
 {
-    if (id == -1)
+    if (id == static_cast<size_t>(-1))
     {
         id = this->nodes_.size();
     }

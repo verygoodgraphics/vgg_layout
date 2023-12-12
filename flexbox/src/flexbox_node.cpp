@@ -62,7 +62,7 @@ bool flexbox_node::add_child(uint32_t id)
 bool flexbox_node::add_child(p_node &child, uint32_t id)
 {
     auto count = YGNodeGetChildCount(this->node_);
-    if (id == -1)
+    if (id == static_cast<uint32_t>(-1))
     {
         id = count;
     }
