@@ -55,6 +55,7 @@ void change::init()
     change_align_items_.insert({align_items_flex_start, YGAlignFlexStart});
     change_align_items_.insert({align_items_center, YGAlignCenter});
     change_align_items_.insert({align_items_flex_end, YGAlignFlexEnd});
+    change_align_items_.insert({align_items_stretch, YGAlignStretch});
 
     change_align_content_.insert({align_content_flex_start, YGAlignFlexStart});
     change_align_content_.insert({align_content_center, YGAlignCenter});

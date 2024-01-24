@@ -91,6 +91,9 @@ public:
     align_items get_align_items() const;
     void set_align_items(align_items value);
 
+    align_self get_align_self() const;
+    void set_align_self(align_self value);
+
     align_content get_align_content() const;
     void set_align_content(align_content value);
 

@@ -134,6 +134,11 @@ align_items flexbox_node::get_align_items() const
     return get_property(this->node_, YGNodeStyleGetAlignItems, change::change_align_items());
 }
 
+align_self flexbox_node::get_align_self() const
+{
+    return get_property(this->node_, YGNodeStyleGetAlignSelf, change::change_align_items());
+}
+
 align_content flexbox_node::get_align_content() const
 {
     return get_property(this->node_, YGNodeStyleGetAlignContent, change::change_align_content());
@@ -206,6 +211,11 @@ void flexbox_node::set_justify_content(justify_content value)
 void flexbox_node::set_align_items(align_items value)
 {
     set_property(this->node_, YGNodeStyleSetAlignItems, change::change_align_items(), value);
+}
+
+void flexbox_node::set_align_self(align_self value)
+{
+    set_property(this->node_, YGNodeStyleSetAlignSelf, change::change_align_items(), value);
 }
 
 void flexbox_node::set_align_content(align_content value)

@@ -45,8 +45,10 @@ enum align_items
 {
     align_items_flex_start = 0,
     align_items_center,
-    align_items_flex_end
+    align_items_flex_end,
+    align_items_stretch
 };
+typedef align_items align_self;
 
 enum align_content
 {
