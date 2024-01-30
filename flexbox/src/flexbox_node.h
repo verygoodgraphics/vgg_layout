@@ -106,6 +106,9 @@ public:
     float get_padding(padding value) const;
     void set_padding(padding padding_value, float value);
 
+    tuple<unit, optional<float>> get_margin(margin value);
+    void set_margin(margin margin_value, unit unit_value, optional<float> value = optional<float>());
+
     position get_position() const;
     void set_position(position value);
 

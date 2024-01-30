@@ -78,6 +78,7 @@ enum padding
     padding_right,
     padding_bottom
 };
+typedef padding margin;
 
 enum position
 {

@@ -22,7 +22,78 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+#include <functional>
 #include "flexbox_node.h"
+
+tuple<unit, optional<float>> get_length(YGNodeRef node, std::function<decltype(YGNodeStyleGetWidth)> fun)
+{
+    auto tem = fun(node);
+
+    switch (tem.unit)
+    {
+        case YGUnitPoint:
+        {
+            return std::make_tuple(unit_point, tem.value);
+        }
+        case YGUnitPercent:
+        {
+            return std::make_tuple(unit_percent, tem.value);
+        }
+        case YGUnitAuto:
+        {
+            return std::make_tuple(unit_auto, optional<float>());
+        }
+        case YGUnitUndefined:
+        {
+            return std::make_tuple(unit_undefine, optional<float>());
+        }
+        default:
+        {
+            assert(false);
+            break;
+        }
+    }
+
+    return std::make_tuple(unit_undefine, optional<float>());
+}
+
+void set_length(YGNodeRef node, unit unit_value, optional<float> value, 
+    std::function<decltype(YGNodeStyleSetWidth)> fun_point,
+    std::function<decltype(YGNodeStyleSetWidthPercent)> fun_percent,
+    std::function<decltype(YGNodeStyleSetWidthAuto)> fun_auto)
+{
+    switch (unit_value)
+    {
+        case unit_point:
+        {
+            assert(value);
+            fun_point(node, *value);
+            return;
+        }
+        case unit_percent:
+        {
+            assert(value);
+            fun_percent(node, *value);
+            return;
+        }
+        case unit_auto:
+        {
+            assert(fun_auto);
+            fun_auto(node);
+            return;
+        }
+        case unit_undefine:
+        {
+            fun_point(node, YGUndefined);
+            return;
+        }
+        default:
+        {
+            assert(false);
+            return;
+        }
+    }    
+}
 
 /*flexbox_node::flexbox_node(YGConfigRef config)
 {
@@ -160,6 +231,12 @@ float flexbox_node::get_padding(padding value) const
     return re.value;
 }
 
+tuple<unit, optional<float>> flexbox_node::get_margin(margin value)
+{
+    auto edge = change::change_padding().left().find(value)->second;
+    return get_length(this->node_, std::bind(YGNodeStyleGetMargin, std::placeholders::_1, edge));
+}
+
 position flexbox_node::get_position() const
 {
     return get_property(this->node_, YGNodeStyleGetPositionType, change::change_position());
@@ -238,6 +315,15 @@ void flexbox_node::set_padding(padding padding_value, float value)
     set_property(this->node_, YGNodeStyleSetPadding, change::change_padding(), padding_value, value);
 }
 
+void flexbox_node::set_margin(margin margin_value, unit unit_value, optional<float> value)
+{
+    auto edge = change::change_padding().left().find(margin_value)->second;
+    set_length(this->node_, unit_value, value, 
+        std::bind(YGNodeStyleSetMargin, std::placeholders::_1, edge, std::placeholders::_2),
+        std::bind(YGNodeStyleSetMarginPercent, std::placeholders::_1, edge, std::placeholders::_2),
+        std::bind(YGNodeStyleSetMarginAuto, std::placeholders::_1, edge));
+}
+
 void flexbox_node::set_position(position value)
 {
     set_property(this->node_, YGNodeStyleSetPositionType, change::change_position(), value);
@@ -261,76 +347,6 @@ void flexbox_node::set_shrink(float value)
 void flexbox_node::set_overflow(overflow value)
 {
     set_property(this->node_, YGNodeStyleSetOverflow, change::change_overflow(), value);
-}
-
-void set_length(YGNodeRef node, unit unit_value, optional<float> value, 
-    decltype(YGNodeStyleSetWidth) *fun_point, 
-    decltype(YGNodeStyleSetWidthPercent) *fun_percent, 
-    decltype(YGNodeStyleSetWidthAuto) *fun_auto = nullptr)
-{
-    switch (unit_value)
-    {
-        case unit_point:
-        {
-            assert(value);
-            fun_point(node, *value);
-            return;
-        }
-        case unit_percent:
-        {
-            assert(value);
-            fun_percent(node, *value);
-            return;
-        }
-        case unit_auto:
-        {
-            assert(fun_auto);
-            fun_auto(node);
-            return;
-        }
-        case unit_undefine:
-        {
-            fun_point(node, YGUndefined);
-            return;
-        }
-        default:
-        {
-            assert(false);
-            return;
-        }
-    }    
-}
-
-tuple<unit, optional<float>> get_length(YGNodeRef node, decltype(YGNodeStyleGetWidth) *fun)
-{
-    auto tem = fun(node);
-
-    switch (tem.unit)
-    {
-        case YGUnitPoint:
-        {
-            return std::make_tuple(unit_point, tem.value);
-        }
-        case YGUnitPercent:
-        {
-            return std::make_tuple(unit_percent, tem.value);
-        }
-        case YGUnitAuto:
-        {
-            return std::make_tuple(unit_auto, optional<float>());
-        }
-        case YGUnitUndefined:
-        {
-            return std::make_tuple(unit_undefine, optional<float>());
-        }
-        default:
-        {
-            assert(false);
-            break;
-        }
-    }
-
-    return std::make_tuple(unit_undefine, optional<float>());
 }
 
 void flexbox_node::set_width(unit unit_value, optional<float> value)
