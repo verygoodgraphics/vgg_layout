@@ -61,6 +61,9 @@ void change::init()
     change_align_content_.insert({align_content_flex_start, YGAlignFlexStart});
     change_align_content_.insert({align_content_center, YGAlignCenter});
     change_align_content_.insert({align_content_flex_end, YGAlignFlexEnd});
+    change_align_content_.insert({align_content_space_between, YGAlignSpaceBetween});
+    change_align_content_.insert({align_content_space_around, YGAlignSpaceAround});
+    change_align_content_.insert({align_content_space_evenly, YGAlignSpaceEvenly});
 
     change_wrap_.insert({wrap_wrap, YGWrapWrap});
     change_wrap_.insert({wrap_no_wrap, YGWrapNoWrap});
@@ -74,7 +77,6 @@ void change::init()
     change_padding_.insert({padding_right, YGEdgeRight});
     change_padding_.insert({padding_bottom, YGEdgeBottom});
 
-    //szn_todo position_sticky position_fixed
     change_position_.insert({position_absolute, YGPositionTypeAbsolute});
     change_position_.insert({position_relative, YGPositionTypeRelative});
     change_position_.insert({position_static, YGPositionTypeStatic});

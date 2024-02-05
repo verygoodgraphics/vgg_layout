@@ -38,14 +38,6 @@
 
 
 
-## todo
-
-* `flexbox`未完成功能：`position_sticky`、`position_fixed`
-
-* `grid`：暂不支持
-
-
-
 ## 测试
 
 * 测试用例：运行`flexbox_test`

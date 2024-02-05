@@ -55,7 +55,10 @@ enum align_content
 {
     align_content_flex_start = 0,
     align_content_center,
-    align_content_flex_end
+    align_content_flex_end,
+    align_content_space_between,
+    align_content_space_around,
+    align_content_space_evenly    
 };
 
 enum wrap
